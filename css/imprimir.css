@@ -1,0 +1,48 @@
+#conteudo {
+    width: 38%;
+    margin-left: 31%;
+    margin-right: 31%;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#cabecalho {
+    text-align: center;
+}
+
+#texto-cabecalho {
+    margin-top: 2px;
+    margin-bottom: 0;
+}
+
+#nao-fiscal {
+    margin: 0;
+}
+
+#Tabela {
+    text-align: center;
+}
+
+#dados-empresa {
+    font-size: 11px;
+}
+
+#dados-cliente {
+    font-size: 11px;
+}
+
+div #valores,
+#dados-valores {
+    font-size: 12px;
+    width: 125px;
+    height: 40px;
+    display: inline-block;
+}
+
+#dados-valores {
+    text-align: right;
+    font-weight: bold;
+}
+
+#obs-valores {
+    font-weight: bold;
+}
