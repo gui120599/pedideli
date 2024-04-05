@@ -101,10 +101,10 @@ function Selecionar_Cliente_Editar(cod_cliente) {
         method: "POST",
         data: { cod_cliente: cod_cliente },
         dataType: "JSON",
-        success: function(result) {
-            result.forEach(function(elemento) {
+        success: function (result) {
+            result.forEach(function (elemento) {
                 Form_Cliente();
-                setTimeout(function() {
+                setTimeout(function () {
                     $("#cod_cliente").val(elemento["cod_cliente"]);
                     $("#nome_cliente").val(elemento["nome_cliente"]);
                     $("#data_nascimento").val(elemento["data_nascimento"]);
@@ -123,7 +123,7 @@ function Selecionar_Cliente_Editar(cod_cliente) {
 
             })
         },
-        error: function() {
+        error: function () {
             $("#form-cliente").html("Error Selecionar");
         }
     })
@@ -319,32 +319,46 @@ function Pesquisar_Produto() {
     });
 }
 
+function Pesquisar_Produto_Card() {
+    var termoPesquisa = $("#campoPesquisa").val().toLowerCase();
+
+    $(".produto-card").each(function () {
+        var descricaoProduto = $(this).find(".produto-descricao").text().toLowerCase();
+
+        if (descricaoProduto.includes(termoPesquisa)) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
+}
+
 function Selecionar_Produto_Editar(cod_produto) {
-   Form_Produto();
+    Form_Produto();
     $.ajax({
         url: "/php/Funcoes/listar-produto-json.php",
         method: "POST",
         data: { cod_produto: cod_produto },
         dataType: "JSON",
         success: function (result) {
-                result.forEach(function (elemento) {
+            result.forEach(function (elemento) {
                 setTimeout(function () {
-                $("#cod_produto").val(elemento["cod_produto"]);
-                $("#descricao_produto").val(elemento["descricao_produto"]);
-                $("#preco_custo_produto").val(elemento["preco_custo"]);
-                $("#preco_venda_produto").val(elemento["preco_venda"]);
-                
+                    $("#cod_produto").val(elemento["cod_produto"]);
+                    $("#descricao_produto").val(elemento["descricao_produto"]);
+                    $("#preco_custo_produto").val(elemento["preco_custo"]);
+                    $("#preco_venda_produto").val(elemento["preco_venda"]);
+
                     $("#categoria").val(elemento["cod_categoria"]);
                 }, 800)
             })
-            
-            
+
+
         },
         error: function () {
             $("#form-categoria").html("Error Selecionar");
         }
     })
-   
+
 }
 
 function Salvar_Produto() {
@@ -354,7 +368,7 @@ function Salvar_Produto() {
         data: $('#form-produto').serialize(),
         success: function (result) {
             $("#form-produto").html(result);
-            Tabela_Produtos(); 
+            Tabela_Produtos();
         },
         error: function () {
             $("#form-produto").html("Error ao Salvar produto pelo Ajax!");
@@ -607,7 +621,9 @@ function Form_Pedido() {
 }
 
 function Abrir_Pedido() {
-    /*$.ajax({
+    Listar_Clientes_Modal();
+    Listar_Produto_Selecionar();
+    $.ajax({
         url: "/php/Funcoes/abrir-pedido-json.php",
         dataType: "JSON",
         success: function (result) {
@@ -619,7 +635,7 @@ function Abrir_Pedido() {
         error: function () {
             console.log("Error ao abrir pedido pelo Ajax!");
         }
-    })*/
+    })
 }
 
 function Radios_Opçoes_Entrega() {
@@ -664,14 +680,9 @@ function Check_Opçoes_Pagamento() {
 
 function Input_Local(desc_opcao_entrega) {
     if (desc_opcao_entrega == "Entregar") {
-        $("#local-pedido").html(`
-    <div class="input-group mb-3">
-        <span class="input-group-text" id="basic-addon1">Endereço da Entrega</span>
-        <input type="text" class="form-control" name="descricao_endereco_entrega" id="descricao_endereco_entrega">
-    </div>
-    `);
+        $("#local-pedido").removeClass('d-none');
     } else {
-        $("#local-pedido").html(``);
+        $("#local-pedido").addClass('d-none');
     }
 }
 
@@ -680,6 +691,9 @@ function Listar_Clientes_Modal() {
         url: "/php/Funcoes/listar-cliente.php",
         success: function (result) {
             $('#modal-cliente').html(result);
+            setTimeout(() => {
+              $('#campoPesquisa').focus();  
+            }, 800);
         },
         error: function () {
             $("#modal-cliente").html("Error");
@@ -703,6 +717,32 @@ function Selecionar_Cliente(cod_cliente) {
         },
         error: function () {
             $("#modal-cliente").html("Error");
+        }
+    })
+}
+
+function Listar_Produto_Selecionar() {
+    $.ajax({
+        url: "/php/Funcoes/listar-produto-json.php",
+        method: "POST",
+        data: { cod_produto: null },
+        dataType: "JSON",
+        success: function (result) {
+            result.forEach(function (elemento) {
+                $('#lista-produtos').append(`
+                <div class="col-sm-3 produto-card" onclick="Form_Quantidade_Produto(` + elemento['cod_produto'] + `)">
+                    <div class="card" role="button">
+                        <div class="card-body">
+                            <h5 class="card-title produto-descricao">` + elemento['descricao_produto'] + `</h5>
+                            <p class="card-text">R$` + elemento['preco_venda'] + `</p>
+                        </div>
+                    </div>
+                </div>
+                `);
+            })
+        },
+        error: function () {
+            $("#corpo-tabela").html("Error ao listar produtos pelo Ajax!");
         }
     })
 }
@@ -767,6 +807,7 @@ function Limpar_Tabela_Produto() {
 }
 
 function Form_Quantidade_Produto(cod_produto) {
+    $("#btn-adicionar-produto-pedido").click();
     $.ajax({
         url: "/php/Forms/quantidade-produto.php",
         success: function (result) {
@@ -830,9 +871,9 @@ function Salvar_Produto_Pedido() {
         },
         success: function (result) {
             $("#rodape-modal-produto").html(result);
-            Listar_Produto_Modal();
             Listar_Produtos_Pedido();
             Atualizar_Valores_Pedido();
+            $('#fechar-modal-qtd-produto').click();
         },
         error: function () {
             console.log("Error ao inserir produto no pedido pelo Ajax!");
@@ -872,25 +913,17 @@ function Listar_Produtos_Pedido() {
         data: { cod_pedido: cod_pedido },
         dataType: "JSON",
         success: function (result) {
-            $('#tabela-produtos-pedido').html(`
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Opções</th>
-                            <th scope="col">Descrição Produto</th>
-                            <th scope="col">Qtd</th>
-                            <th scope="col">Valor Unt.</th>
-                            <th scope="col">Valor Total</th>
-                            <th scope="col">Observação</th>
-                        </tr>
-                    </thead>
-                    <tbody id="corpo-tabela-produtos-pedido">`);
-
+            $('#corpo-tabela-produtos-pedido').html('');
             result.forEach(function (elemento) {
                 $('#corpo-tabela-produtos-pedido').append(`
                         <tr>
-                            <td><button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modal-buscar-produto" onclick="Form_Alterar_Produto_Pedido(` + elemento['cod_produto_pedido'] + `)">Alterar</button>
-                            <button type="button" class="btn btn-outline-danger" onclick="Remover_Produto_Pedido(` + elemento['cod_produto_pedido'] + `)">Remover</button></td>
+                            <td><button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modal-buscar-produto" onclick="Form_Alterar_Produto_Pedido(` + elemento['cod_produto_pedido'] + `)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                          </svg></button>
+                            <button type="button" class="btn btn-outline-danger" onclick="Remover_Produto_Pedido(` + elemento['cod_produto_pedido'] + `)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                            <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+                          </svg></button></td>
                             <td>` + elemento['descricao_produto'] + `</td>
                             <td>` + elemento['quantidade_produto'] + `</td>
                             <td>` + elemento['preco_venda'] + `</td>
@@ -898,9 +931,6 @@ function Listar_Produtos_Pedido() {
                             <td>` + elemento['observacao_produto_pedido'] + `</td>
                         </tr>`);
             })
-            $('#tabela-produtos-pedido').append(`
-                    </tbody>
-                </table>`);
         },
         error: function () {
             console.log("Error ao listar produtos no pedido pelo Ajax!");
@@ -962,6 +992,7 @@ function Alterar_Produto_Pedido() {
             $("#modal-produto").html(result);
             Listar_Produtos_Pedido();
             Atualizar_Valores_Pedido();
+            $('#fechar-modal-qtd-produto').click();
         },
         error: function () {
             console.log('Erro ao alterar produto do pedido pelo Ajax!');
@@ -1000,7 +1031,7 @@ function Salvar_Novo_Pedido() {
     if (cod_cliente == '') {
         $("#btn-modal-alerta").trigger('click');
         $("#corpo-modal-alerta").html("<h4>Selecione o cliente para salvar o Pedido!</h4>");
-    } else if(cod_usuario == '') {
+    } else if (cod_usuario == '') {
         $("#btn-modal-alerta").trigger('click');
         $("#corpo-modal-alerta").html("<h4>Selecione o usuario para salvar o Pedido!</h4>");
     } else if (valor_produtos == '') {
@@ -1178,16 +1209,16 @@ function Form_Alterar_Pedido_Aberto(cod_pedido) {
                         $("#observacao_pagamento").val(elemento['observacao_pagamento']);
                         op_entre = elemento['cod_opcao_entrega'];
                         setTimeout(function () {
-                            if(op_entre == 1){
+                            if (op_entre == 1) {
                                 $("#1").trigger('click');
                             }
-                            else if(op_entre == 2){
+                            else if (op_entre == 2) {
                                 $("#2").trigger('click');
                                 $("#descricao_endereco_entrega").val(elemento['descricao_endereco_entrega']);
                             }
-                            else if(op_entre == 3){
+                            else if (op_entre == 3) {
                                 $("#3").trigger('click');
-                            }else{
+                            } else {
                                 console.log('Erro no switch case opção de entrega!');
                             }
                         }, 200)
@@ -1350,7 +1381,7 @@ function Tabela_Pedidos_Abertos() {
         <div class="col-md-12" style="text-align:center">
             <img src="../../pedideli/img/carregando.gif">
         </div>`
-        );
+    );
     $.ajax({
         url: "/php/Funcoes/listar-pedidos-abertos-json.php",
         dataType: "JSON",
@@ -1751,13 +1782,14 @@ function Listar_Vendas_Data() {
 
 function Tabela_Vendas_Data() {
     data_venda = $("#data_venda").val();
-    
+
     $.ajax({
         url: "/php/Funcoes/listar-vendas-data-json.php",
         method: "POST",
         data: { data_venda: data_venda },
         dataType: "JSON",
-        success: function (result2) {console.log(data_venda);
+        success: function (result2) {
+            console.log(data_venda);
             $('#tabela-vendas-data').html(`
                 <table class="table table-hover">
                     <thead>
@@ -1779,9 +1811,9 @@ function Tabela_Vendas_Data() {
                         </tr>
                     </thead>
                     <tbody id="corpo-tabela-vendas-data">`);
-                    
+
             result2.forEach(function (elemento2) {
-                
+
                 $('#corpo-tabela-vendas-data').append(`
                         <tr>
                             <td><button type="button" class="btn btn-primary" onclick="Imprimir_Venda(` + elemento2['cod_venda'] + `)">Imprimir</button></td>
@@ -1799,11 +1831,11 @@ function Tabela_Vendas_Data() {
                             <td>` + elemento2['hora_venda'] + `</td>
                         </tr>`
                 );
-                
-                
-                
+
+
+
             })
-            
+
             $('#tabela-vendas-data').append(`
                     </tbody>
                 </table>`);
@@ -1814,11 +1846,11 @@ function Tabela_Vendas_Data() {
                 dataType: "JSON",
                 success: function (result) {
                     result.forEach(function (elemento) {
-                        if(elemento['total_vendas'] == null){
+                        if (elemento['total_vendas'] == null) {
                             $("#valores").html(``);
                             console.log("tsette");
-                        }else{
-                           $("#valores").html(`
+                        } else {
+                            $("#valores").html(`
                             <label> Dinheiro <span class="badge rounded-pill bg-success"> R$`+ elemento['dinheiro'] + ` </span></label>
                             <label> Troco <span class="badge rounded-pill bg-success"> R$`+ elemento['troco'] + ` </span></label>
                             <label> Total Dinheiro <span class="badge rounded-pill bg-success"> R$`+ elemento['total_dinheiro'] + ` </span></label>
@@ -1829,9 +1861,9 @@ function Tabela_Vendas_Data() {
                             <label> Total Vendas <span class="badge rounded-pill bg-success"> R$`+ elemento['total_vendas'] + ` </span></label>
                             <h3> Qtd Pedidos <span class="badge rounded-pill bg-success"> `+ elemento['qtd_pedidos'] + ` </span>
                              Qtd Vendas <span class="badge rounded-pill bg-success"> `+ elemento['qtd_vendas'] + ` </span></h3>
-                        `); 
+                        `);
                         }
-                        
+
                     })
                 }, error: function () {
                     console.log("Erro ao listar valores das vendas pelo Ajax!");
@@ -1969,8 +2001,8 @@ function Imprimir_Pedido_Aberto(cod_pedido) {
                     success: function (result2) {
                         result2.forEach(function (elemento2) {
                             if (elemento2['observacao_produto_pedido'] == '') {
-                                if(elemento2['quantidade_produto'] == 0.5){
-                                win.document.write(`<tr>
+                                if (elemento2['quantidade_produto'] == 0.5) {
+                                    win.document.write(`<tr>
                                     <td style="font-size: 17px;font-weight: bold;">Meia</td>
                                     <td>` + elemento2['descricao_produto'] + `</td>
                                     <td style="font-size: 11px;font-weight: bold;">R$` + elemento2['valor_total_produto'] + `</td>
@@ -1981,7 +2013,7 @@ function Imprimir_Pedido_Aberto(cod_pedido) {
                                     <td><label style="font-size: 11px;">-------</label></td>
                                 </tr>
                                 `);
-                                }else{
+                                } else {
                                     win.document.write(`<tr>
                                     <td class="text-center" style="font-size: 17px;font-weight: bold;">` + elemento2['quantidade_produto'] + `</td>
                                     <td>` + elemento2['descricao_produto'] + `</td>
@@ -1995,7 +2027,7 @@ function Imprimir_Pedido_Aberto(cod_pedido) {
                                 `);
                                 }
                             } else {
-                                if(elemento2['quantidade_produto'] == 0.5){
+                                if (elemento2['quantidade_produto'] == 0.5) {
                                     win.document.write(`<tr>
                                     <td style="font-size:17px;font-weight: bold;">Meia</td>
                                     <td>` + elemento2['descricao_produto'] + `</td>
@@ -2008,8 +2040,8 @@ function Imprimir_Pedido_Aberto(cod_pedido) {
                                     <td><label style="font-size: 11px;">-------</label></td>
                                 </tr>
                                 `);
-                                }else{
-                                   win.document.write(`<tr>
+                                } else {
+                                    win.document.write(`<tr>
                                     <td style="font-size:17px;font-weight: bold;">` + elemento2['quantidade_produto'] + `</td>
                                     <td>` + elemento2['descricao_produto'] + `</td>
                                     <td style="font-size: 11px;font-weight: bold;">R$` + elemento2['valor_total_produto'] + `</td>
@@ -2020,7 +2052,7 @@ function Imprimir_Pedido_Aberto(cod_pedido) {
                                     <td><label style="font-size: 11px;">-----------------------</label></td>
                                     <td><label style="font-size: 11px;">-------</label></td>
                                 </tr>
-                                `); 
+                                `);
                                 }
                             }
                         })

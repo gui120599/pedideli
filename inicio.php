@@ -177,9 +177,9 @@ if ((isset($_SESSION['usuarioNome']))) {
         </div>
     </nav>
     <div class="container-fluid">
-        <div class="row p-2">
-            <div class="col-12" id="logo">
-                <div class="container ">
+        <div class="row p-1">
+            <div class="col-12 p-3" id="logo">
+                <div class="container">
                     <div class="row justify-content-center">
                         <div class="col-12 col-md-5 align-self-center">
                             <button type="button" class="w-100 btn btn-primary text-uppercase fs-2" onclick="Form_Pedido()">
